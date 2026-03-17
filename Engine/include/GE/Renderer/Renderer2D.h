@@ -13,7 +13,7 @@ public:
     static void Init();
     static void Shutdown();
 
-    static void BeginScene(const Camera2D& camera);
+    static void BeginScene(const Camera2D& camera, const glm::vec4& clearColor = { 0.1f, 0.1f, 0.1f, 1.0f });
     static void EndScene();
     static void Present();   // call once per frame after all layers render
 
@@ -42,6 +42,11 @@ public:
 
     // Returns the underlying SDL_Renderer* as void* (used by ImGui backend)
     static void* GetNativeRenderer();
+
+    // ─── Viewport render target ───────────────────────────────────────────────
+    static void BeginViewport(int w, int h);  // redirect draws to offscreen texture
+    static void EndViewport();                // restore default render target
+    static void* GetViewportTexture();        // returns SDL_Texture*
 };
 
 } // namespace GE

@@ -8,6 +8,8 @@ namespace GE {
 class StatsPanel {
 public:
     void OnImGuiRender(f32 deltaTime) {
+        ImGui::SetNextWindowPos(ImVec2(0, 420),   ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(220, 160), ImGuiCond_FirstUseEver);
         ImGui::Begin("Renderer Stats");
 
         // Frame timing

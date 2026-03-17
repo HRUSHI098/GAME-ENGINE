@@ -173,7 +173,7 @@ void SandboxLayer::OnUpdate(f32 dt) {
     mWasPressed = mPressed;
 
     m_Scene->OnUpdate(dt);
-    m_Scene->OnRender();
+    // Rendering handled by EditorLayer (viewport texture) in debug builds.
 }
 
 void SandboxLayer::OnEvent(GE::Event& e) {

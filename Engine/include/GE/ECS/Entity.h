@@ -48,9 +48,8 @@ public:
     }
 
     // ── Validity ──────────────────────────────────────────────────────────────
-    bool IsValid() const {
-        return m_Scene != nullptr && m_Handle != entt::null;
-    }
+    bool   IsValid()   const { return m_Scene != nullptr && m_Handle != entt::null; }
+    Scene* GetScene()  const { return m_Scene; }
 
     operator bool()           const { return IsValid(); }
     operator entt::entity()   const { return m_Handle; }

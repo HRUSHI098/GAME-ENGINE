@@ -1,4 +1,5 @@
 #include "GE/Editor/panels/PropertiesPanel.h"
+#include "GE/ECS/Scene.h"
 #include "GE/ECS/Components.h"
 #include "GE/Physics/PhysicsComponents.h"
 #include "GE/Audio/AudioComponents.h"
@@ -54,6 +55,8 @@ static bool DragVec2(const char* label, glm::vec2& values, float speed = 0.1f) {
 
 // ─── PropertiesPanel ─────────────────────────────────────────────────────────
 void PropertiesPanel::OnImGuiRender() {
+    ImGui::SetNextWindowPos(ImVec2(1040, 40),  ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(240, 580),  ImGuiCond_FirstUseEver);
     ImGui::Begin("Properties");
 
     if (!m_Entity || !m_Entity.IsValid()) {
@@ -148,9 +151,29 @@ void PropertiesPanel::DrawComponents() {
     });
 
     // ── Camera ────────────────────────────────────────────────────────────────
-    DrawComponent<CameraComponent>("Camera", m_Entity, [](CameraComponent& cc) {
-        ImGui::Checkbox("Primary",           &cc.Primary);
-        ImGui::Checkbox("Fixed Aspect Ratio",&cc.FixedAspectRatio);
+    DrawComponent<CameraComponent>("Camera", m_Entity, [&](CameraComponent& cc) {
+        ImGui::Checkbox("Primary",            &cc.Primary);
+        ImGui::Checkbox("Fixed Aspect Ratio", &cc.FixedAspectRatio);
+
+        ImGui::Separator();
+        ImGui::Text("Projection");
+
+        float size = cc.OrthographicSize;
+        if (ImGui::DragFloat("Ortho Size", &size, 0.05f, 0.1f, 100.0f, "%.2f")) {
+            cc.OrthographicSize = size;
+            // Recalculate projection from current viewport aspect
+            Scene* scene = m_Entity.GetScene();
+            if (scene) {
+                float aspect = (float)scene->GetViewportWidth() / (float)scene->GetViewportHeight();
+                cc.RecalcProjection(aspect);
+            }
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Half-height in world units. Smaller = zoomed in.");
+
+        ImGui::Separator();
+        ImGui::Text("Environment");
+        ImGui::ColorEdit4("Background", glm::value_ptr(cc.BackgroundColor));
     });
 
     // ── Rigidbody 2D ──────────────────────────────────────────────────────────

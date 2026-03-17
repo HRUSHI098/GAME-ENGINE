@@ -35,6 +35,9 @@ target_sources(Engine PRIVATE
     src/Editor/EditorLayer.cpp
     src/Editor/panels/SceneHierarchyPanel.cpp
     src/Editor/panels/PropertiesPanel.cpp
+    src/Editor/panels/ViewportPanel.cpp
+    src/Editor/panels/AssetBrowserPanel.cpp
+    src/Editor/panels/ConsolePanel.cpp
 )
 
 # ── C# Scripting (only compiled when Mono is available) ──────────────────────

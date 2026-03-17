@@ -242,7 +242,8 @@ void Scene::OnUpdate(f32 dt) {
 
 void Scene::OnRender() {
     // ── Find primary camera ───────────────────────────────────────────────────
-    Camera2D* mainCamera = nullptr;
+    Camera2D*  mainCamera = nullptr;
+    glm::vec4  bgColor    = { 0.1f, 0.1f, 0.1f, 1.0f };
     {
         auto view = m_Registry.view<CameraComponent, TransformComponent>();
         for (auto entity : view) {
@@ -252,6 +253,7 @@ void Scene::OnRender() {
                 cc.Camera.SetPosition({ tc.Position.x, tc.Position.y, 0.0f });
                 cc.Camera.SetRotation(glm::degrees(tc.Rotation));
                 mainCamera = &cc.Camera;
+                bgColor    = cc.BackgroundColor;
                 break;
             }
         }
@@ -259,7 +261,7 @@ void Scene::OnRender() {
     if (!mainCamera) return;
 
     // ── Render sprites sorted by ZOrder ──────────────────────────────────────
-    Renderer2D::BeginScene(*mainCamera);
+    Renderer2D::BeginScene(*mainCamera, bgColor);
 
     struct RenderEntry {
         TransformComponent*      Transform;

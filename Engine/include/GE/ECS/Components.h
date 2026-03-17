@@ -42,13 +42,21 @@ struct SpriteRendererComponent {
 
 // ─── CameraComponent ─────────────────────────────────────────────────────────
 struct CameraComponent {
-    Camera2D Camera;
-    bool     Primary          = true;   // is this the scene's active camera?
-    bool     FixedAspectRatio = false;
-    f32      OrthographicSize = 7.0f;   // half-height in world units
+    Camera2D  Camera;
+    bool      Primary          = true;
+    bool      FixedAspectRatio = false;
+    f32       OrthographicSize = 7.0f;          // half-height in world units
+    glm::vec4 BackgroundColor  = { 0.1f, 0.1f, 0.1f, 1.0f };
 
     CameraComponent()
         : Camera(-7.0f * (16.f / 9.f), 7.0f * (16.f / 9.f), -7.0f, 7.0f) {}
+
+    // Recalculate projection when OrthographicSize or aspect changes
+    void RecalcProjection(float aspect) {
+        Camera.SetProjection(
+            -OrthographicSize * aspect,  OrthographicSize * aspect,
+            -OrthographicSize,            OrthographicSize);
+    }
 };
 
 // ─── NativeScriptComponent ────────────────────────────────────────────────────

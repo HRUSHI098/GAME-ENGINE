@@ -8,6 +8,8 @@
 namespace GE {
 
 void SceneHierarchyPanel::OnImGuiRender() {
+    ImGui::SetNextWindowPos(ImVec2(0, 40),    ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(220, 380), ImGuiCond_FirstUseEver);
     ImGui::Begin("Scene Hierarchy");
 
     if (!m_Scene) { ImGui::Text("No active scene."); ImGui::End(); return; }

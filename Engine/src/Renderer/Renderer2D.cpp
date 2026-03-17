@@ -10,9 +10,15 @@ namespace GE {
 
 // ─── Internal state ───────────────────────────────────────────────────────────
 struct Renderer2DData {
-    SDL2RendererAPI* RendererAPI = nullptr;
-    const Camera2D*  ActiveCamera = nullptr;
+    SDL2RendererAPI*  RendererAPI  = nullptr;
+    const Camera2D*   ActiveCamera = nullptr;
     Renderer2D::Stats Stats;
+
+    SDL_Texture* ViewportTex = nullptr;
+    int          ViewportW   = 0;
+    int          ViewportH   = 0;
+    int          RenderW     = 0;   // active render target width  (viewport or window)
+    int          RenderH     = 0;   // active render target height
 };
 
 static Renderer2DData s_Data;
@@ -21,20 +27,26 @@ void Renderer2D::Init() {
     auto* nativeWindow = static_cast<SDL_Window*>(
         Application::Get().GetWindow().GetNativeWindow()
     );
-    // The SDL2RendererAPI is owned here for the lifetime of the renderer.
     static SDL2RendererAPI api(nativeWindow);
     api.Init();
     s_Data.RendererAPI = &api;
+    s_Data.RenderW = static_cast<int>(Application::Get().GetWindow().GetWidth());
+    s_Data.RenderH = static_cast<int>(Application::Get().GetWindow().GetHeight());
     GE_CORE_INFO("Renderer2D initialised (SDL2 backend).");
 }
 
 void Renderer2D::Shutdown() {
+    if (s_Data.ViewportTex) {
+        SDL_DestroyTexture(s_Data.ViewportTex);
+        s_Data.ViewportTex = nullptr;
+    }
     if (s_Data.RendererAPI)
         s_Data.RendererAPI->Shutdown();
 }
 
-void Renderer2D::BeginScene(const Camera2D& camera) {
+void Renderer2D::BeginScene(const Camera2D& camera, const glm::vec4& clearColor) {
     s_Data.ActiveCamera = &camera;
+    s_Data.RendererAPI->SetClearColor(clearColor);
     s_Data.RendererAPI->Clear();
 }
 
@@ -46,13 +58,37 @@ void Renderer2D::Present() {
     s_Data.RendererAPI->Present();
 }
 
+// ─── Viewport render target ───────────────────────────────────────────────────
+void Renderer2D::BeginViewport(int w, int h) {
+    SDL_Renderer* r = s_Data.RendererAPI->GetSDLRenderer();
+    if (w != s_Data.ViewportW || h != s_Data.ViewportH || !s_Data.ViewportTex) {
+        if (s_Data.ViewportTex)
+            SDL_DestroyTexture(s_Data.ViewportTex);
+        s_Data.ViewportTex = SDL_CreateTexture(r, SDL_PIXELFORMAT_RGBA8888,
+                                               SDL_TEXTUREACCESS_TARGET, w, h);
+        s_Data.ViewportW = w;
+        s_Data.ViewportH = h;
+    }
+    SDL_SetRenderTarget(r, s_Data.ViewportTex);
+    s_Data.RenderW = w;
+    s_Data.RenderH = h;
+}
+
+void Renderer2D::EndViewport() {
+    SDL_Renderer* r = s_Data.RendererAPI->GetSDLRenderer();
+    SDL_SetRenderTarget(r, nullptr);
+    s_Data.RenderW = static_cast<int>(Application::Get().GetWindow().GetWidth());
+    s_Data.RenderH = static_cast<int>(Application::Get().GetWindow().GetHeight());
+}
+
+void* Renderer2D::GetViewportTexture() {
+    return s_Data.ViewportTex;
+}
+
 // ─── World-to-screen helpers ─────────────────────────────────────────────────
-// Transform a world-space point through the camera's view-projection matrix
-// and map to SDL screen pixels.
-static SDL_Point WorldToScreen(const glm::vec2& worldPos, u32 screenW, u32 screenH,
+static SDL_Point WorldToScreen(const glm::vec2& worldPos, int screenW, int screenH,
                                const glm::mat4& vp) {
     glm::vec4 clip = vp * glm::vec4(worldPos, 0.0f, 1.0f);
-    // NDC → screen
     float ndcX = clip.x / clip.w;
     float ndcY = clip.y / clip.w;
     int sx = static_cast<int>((ndcX + 1.0f) * 0.5f * screenW);
@@ -64,14 +100,10 @@ static SDL_Point WorldToScreen(const glm::vec2& worldPos, u32 screenW, u32 scree
 void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size,
                           const glm::vec4& color) {
     SDL_Renderer* r = s_Data.RendererAPI->GetSDLRenderer();
-    u32 w = Application::Get().GetWindow().GetWidth();
-    u32 h = Application::Get().GetWindow().GetHeight();
     const glm::mat4& vp = s_Data.ActiveCamera->GetViewProjectionMatrix();
 
-    // Transform top-left and bottom-right corners
-    SDL_Point tl = WorldToScreen(position,                         w, h, vp);
-    SDL_Point br = WorldToScreen(position + size,                  w, h, vp);
-
+    SDL_Point tl = WorldToScreen(position,        s_Data.RenderW, s_Data.RenderH, vp);
+    SDL_Point br = WorldToScreen(position + size, s_Data.RenderW, s_Data.RenderH, vp);
     SDL_Rect rect = { tl.x, tl.y, br.x - tl.x, br.y - tl.y };
 
     SDL_SetRenderDrawColor(r,
@@ -89,13 +121,10 @@ void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size,
                           const Ref<Texture2D>& texture, const glm::vec4& tint) {
     SDL_Renderer* r   = s_Data.RendererAPI->GetSDLRenderer();
     SDL_Texture*  tex = static_cast<SDL_Texture*>(texture->GetNativeHandle());
-    u32 w = Application::Get().GetWindow().GetWidth();
-    u32 h = Application::Get().GetWindow().GetHeight();
     const glm::mat4& vp = s_Data.ActiveCamera->GetViewProjectionMatrix();
 
-    SDL_Point tl = WorldToScreen(position,        w, h, vp);
-    SDL_Point br = WorldToScreen(position + size, w, h, vp);
-
+    SDL_Point tl = WorldToScreen(position,        s_Data.RenderW, s_Data.RenderH, vp);
+    SDL_Point br = WorldToScreen(position + size, s_Data.RenderW, s_Data.RenderH, vp);
     SDL_Rect dst = { tl.x, tl.y, br.x - tl.x, br.y - tl.y };
 
     SDL_SetTextureColorMod(tex,
@@ -111,8 +140,6 @@ void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size,
 
 void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size,
                                  f32 rotationRadians, const glm::vec4& color) {
-    // For rotated quads, render to a texture then SDL_RenderCopyEx.
-    // For now, fall back to axis-aligned — rotation support extended in Phase 2.
     (void)rotationRadians;
     DrawQuad(position, size, color);
 }
@@ -122,13 +149,10 @@ void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& siz
                                  const glm::vec4& tint) {
     SDL_Renderer* r   = s_Data.RendererAPI->GetSDLRenderer();
     SDL_Texture*  tex = static_cast<SDL_Texture*>(texture->GetNativeHandle());
-    u32 w = Application::Get().GetWindow().GetWidth();
-    u32 h = Application::Get().GetWindow().GetHeight();
     const glm::mat4& vp = s_Data.ActiveCamera->GetViewProjectionMatrix();
 
-    SDL_Point tl = WorldToScreen(position,        w, h, vp);
-    SDL_Point br = WorldToScreen(position + size, w, h, vp);
-
+    SDL_Point tl = WorldToScreen(position,        s_Data.RenderW, s_Data.RenderH, vp);
+    SDL_Point br = WorldToScreen(position + size, s_Data.RenderW, s_Data.RenderH, vp);
     SDL_Rect dst = { tl.x, tl.y, br.x - tl.x, br.y - tl.y };
     SDL_Point center = { dst.w / 2, dst.h / 2 };
     double angleDeg  = static_cast<double>(rotationRadians) * (180.0 / M_PI);

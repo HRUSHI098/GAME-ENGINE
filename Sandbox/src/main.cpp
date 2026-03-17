@@ -6,11 +6,10 @@ class SandboxApp : public GE::Application {
 public:
     SandboxApp()
         : GE::Application(GE::WindowProps{ "GE Sandbox", 1280, 720 }) {
-        PushLayer(new SandboxLayer());
-
 #ifdef GE_DEBUG
-        PushOverlay(new GE::EditorLayer());
+        PushOverlay(new GE::EditorLayer());  // must come first so s_Instance is set
 #endif
+        PushLayer(new SandboxLayer());
     }
 };
 

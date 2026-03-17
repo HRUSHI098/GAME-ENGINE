@@ -47,8 +47,10 @@ public:
 
     Entity FindByName(const std::string& name);
 
-    const std::string& GetName()     const { return m_Name; }
-    entt::registry&    GetRegistry()       { return m_Registry; }
+    const std::string& GetName()          const { return m_Name; }
+    entt::registry&    GetRegistry()            { return m_Registry; }
+    u32                GetViewportWidth()  const { return m_ViewportWidth; }
+    u32                GetViewportHeight() const { return m_ViewportHeight; }
 
 private:
     entt::registry        m_Registry;
