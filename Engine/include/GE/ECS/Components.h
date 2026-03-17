@@ -4,7 +4,9 @@
 #include "GE/Renderer/Texture.h"
 #include "GE/Renderer/Camera.h"
 #include <glm/glm.hpp>
+#include <entt/entt.hpp>
 #include <string>
+#include <vector>
 #include <functional>
 
 namespace GE {
@@ -57,6 +59,13 @@ struct CameraComponent {
             -OrthographicSize * aspect,  OrthographicSize * aspect,
             -OrthographicSize,            OrthographicSize);
     }
+};
+
+// ─── RelationshipComponent ────────────────────────────────────────────────────
+// Stores parent/child links for scene graph hierarchy.
+struct RelationshipComponent {
+    entt::entity Parent   = entt::null;
+    std::vector<entt::entity> Children;
 };
 
 // ─── NativeScriptComponent ────────────────────────────────────────────────────

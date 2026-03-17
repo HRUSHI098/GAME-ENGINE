@@ -3,6 +3,8 @@
 #include "GE/Core/Base.h"
 #include "GE/Core/Log.h"
 #include <entt/entt.hpp>
+#include <glm/glm.hpp>
+#include <vector>
 
 namespace GE {
 
@@ -46,6 +48,13 @@ public:
         GE_ASSERT(HasComponent<T>(), "Entity does not have component!");
         GetRegistry().remove<T>(m_Handle);
     }
+
+    // ── Scene graph ───────────────────────────────────────────────────────────
+    void   SetParent(Entity parent);
+    void   RemoveParent();
+    Entity GetParent() const;
+    const std::vector<entt::entity>& GetChildren() const;
+    glm::vec2 GetWorldPosition() const;   // accumulates parent transforms
 
     // ── Validity ──────────────────────────────────────────────────────────────
     bool   IsValid()   const { return m_Scene != nullptr && m_Handle != entt::null; }

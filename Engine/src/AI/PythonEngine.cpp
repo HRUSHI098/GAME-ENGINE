@@ -1,4 +1,5 @@
 #include "GE/AI/PythonEngine.h"
+#include "GE/AI/ScriptWatcher.h"
 #include "GE/Core/Log.h"
 
 #include <pybind11/embed.h>
@@ -42,10 +43,16 @@ void PythonEngine::Init(const std::string& scriptsRootPath) {
     } catch (const py::error_already_set& e) {
         GE_CORE_ERROR("[PythonEngine] Init error: {}", e.what());
     }
+
+    // Start watching for script changes (hot-reload)
+    ScriptWatcher::Init(scriptsRootPath, [](const std::string& mod) {
+        PythonEngine::ReloadModule(mod);
+    });
 }
 
 void PythonEngine::Shutdown() {
     if (!s_Initialised) return;
+    ScriptWatcher::Shutdown();
     py::finalize_interpreter();
     s_Initialised = false;
     GE_CORE_INFO("[PythonEngine] Shut down.");
@@ -67,6 +74,24 @@ py::object PythonEngine::ImportModule(const std::string& moduleName) {
     } catch (const py::error_already_set& e) {
         GE_CORE_ERROR("[PythonEngine] ImportModule '{}' error: {}", moduleName, e.what());
         return py::none();
+    }
+}
+
+void PythonEngine::ReloadModule(const std::string& moduleName) {
+    if (!s_Initialised) return;
+    try {
+        py::module_ sys      = py::module_::import("sys");
+        py::object  modules  = sys.attr("modules");
+        if (!modules.contains(moduleName.c_str())) {
+            GE_CORE_WARN("[PythonEngine] ReloadModule: '{}' not loaded, skipping.", moduleName);
+            return;
+        }
+        py::module_ importlib = py::module_::import("importlib");
+        py::object  mod       = modules[moduleName.c_str()];
+        importlib.attr("reload")(mod);
+        GE_CORE_INFO("[PythonEngine] Hot-reloaded module '{}'.", moduleName);
+    } catch (const py::error_already_set& e) {
+        GE_CORE_ERROR("[PythonEngine] ReloadModule '{}' error: {}", moduleName, e.what());
     }
 }
 

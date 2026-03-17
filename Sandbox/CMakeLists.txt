@@ -17,4 +17,7 @@ add_custom_command(TARGET Sandbox POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/scripts
         $<TARGET_FILE_DIR:Sandbox>/scripts
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/Engine/assets
+        $<TARGET_FILE_DIR:Sandbox>/assets
 )

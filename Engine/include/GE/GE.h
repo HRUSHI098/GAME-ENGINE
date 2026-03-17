@@ -46,6 +46,9 @@
 #include "GE/Assets/AssetManager.h"
 #include "GE/Scene/SceneSerializer.h"
 
+// Tilemap
+#include "GE/Tilemap/Tilemap.h"
+
 // Editor
 #include "GE/Editor/EditorLayer.h"
 
@@ -55,6 +58,7 @@
 #include "GE/AI/BehaviorTree.h"
 #include "GE/AI/MLEnvironment.h"
 #include "GE/AI/AISystem.h"
+#include "GE/AI/ScriptWatcher.h"
 
 // Math (re-export glm)
 #include <glm/glm.hpp>

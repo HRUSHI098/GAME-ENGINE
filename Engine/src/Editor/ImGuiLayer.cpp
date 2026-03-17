@@ -43,6 +43,16 @@ void ImGuiLayer::OnAttach() {
     ImGui_ImplSDL2_InitForSDLRenderer(nativeWindow, nativeRenderer);
     ImGui_ImplSDLRenderer2_Init(nativeRenderer);
 
+    // Load custom font — falls back to ImGui default if file not found
+    io.Fonts->Clear();
+    ImFont* font = io.Fonts->AddFontFromFileTTF("assets/fonts/RobotoMono.ttf", 14.0f);
+    if (!font) {
+        io.Fonts->AddFontDefault();
+        GE_CORE_WARN("ImGuiLayer: RobotoMono.ttf not found — using default font.");
+    }
+    ImGui_ImplSDLRenderer2_DestroyFontsTexture();
+    ImGui_ImplSDLRenderer2_CreateFontsTexture();
+
     GE_CORE_INFO("ImGuiLayer attached.");
 }
 

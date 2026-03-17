@@ -30,6 +30,7 @@ target_sources(Engine PRIVATE
     src/AI/PythonEngine.cpp
     src/AI/EngineBindings.cpp
     src/AI/AISystem.cpp
+    src/AI/ScriptWatcher.cpp
 
     # Editor
     src/Editor/ImGuiLayer.cpp
@@ -45,6 +46,9 @@ target_sources(Engine PRIVATE
 
     # Asset management
     src/Assets/AssetManager.cpp
+
+    # Tilemap
+    src/Tilemap/Tilemap.cpp
 )
 
 # ── C# Scripting (only compiled when Mono is available) ──────────────────────

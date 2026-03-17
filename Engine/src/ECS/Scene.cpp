@@ -26,6 +26,74 @@ entt::registry& Entity::GetRegistry() const {
     return m_Scene->GetRegistry();
 }
 
+// ─── Scene graph helpers ──────────────────────────────────────────────────────
+void Entity::SetParent(Entity parent) {
+    auto& reg = GetRegistry();
+
+    // Ensure both entities have RelationshipComponent
+    if (!HasComponent<RelationshipComponent>())
+        AddComponent<RelationshipComponent>();
+    if (!parent.HasComponent<RelationshipComponent>())
+        parent.AddComponent<RelationshipComponent>();
+
+    auto& myRel  = GetComponent<RelationshipComponent>();
+    auto& parRel = parent.GetComponent<RelationshipComponent>();
+
+    // Remove from old parent
+    if (myRel.Parent != entt::null) {
+        Entity oldParent(myRel.Parent, m_Scene);
+        if (oldParent.IsValid() && oldParent.HasComponent<RelationshipComponent>()) {
+            auto& oldRel = oldParent.GetComponent<RelationshipComponent>();
+            oldRel.Children.erase(
+                std::remove(oldRel.Children.begin(), oldRel.Children.end(), m_Handle),
+                oldRel.Children.end());
+        }
+    }
+
+    myRel.Parent = static_cast<entt::entity>(parent);
+    parRel.Children.push_back(m_Handle);
+}
+
+void Entity::RemoveParent() {
+    if (!HasComponent<RelationshipComponent>()) return;
+    auto& rel = GetComponent<RelationshipComponent>();
+    if (rel.Parent == entt::null) return;
+
+    Entity parent(rel.Parent, m_Scene);
+    if (parent.IsValid() && parent.HasComponent<RelationshipComponent>()) {
+        auto& parRel = parent.GetComponent<RelationshipComponent>();
+        parRel.Children.erase(
+            std::remove(parRel.Children.begin(), parRel.Children.end(), m_Handle),
+            parRel.Children.end());
+    }
+    rel.Parent = entt::null;
+}
+
+Entity Entity::GetParent() const {
+    if (!HasComponent<RelationshipComponent>()) return {};
+    return Entity(GetComponent<RelationshipComponent>().Parent, m_Scene);
+}
+
+const std::vector<entt::entity>& Entity::GetChildren() const {
+    static const std::vector<entt::entity> empty;
+    if (!HasComponent<RelationshipComponent>()) return empty;
+    return GetComponent<RelationshipComponent>().Children;
+}
+
+glm::vec2 Entity::GetWorldPosition() const {
+    glm::vec2 pos = HasComponent<TransformComponent>()
+        ? GetComponent<TransformComponent>().Position
+        : glm::vec2(0.0f);
+
+    Entity parent = GetParent();
+    while (parent.IsValid()) {
+        if (parent.HasComponent<TransformComponent>())
+            pos += parent.GetComponent<TransformComponent>().Position;
+        parent = parent.GetParent();
+    }
+    return pos;
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 static b2BodyType ToBox2DBodyType(RigidBody2DComponent::BodyType t) {
     switch (t) {

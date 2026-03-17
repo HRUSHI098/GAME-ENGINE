@@ -2,6 +2,7 @@
 #include "GE/AI/BehaviorTree.h"
 #include "GE/AI/MLEnvironment.h"
 #include "GE/AI/PythonEngine.h"
+#include "GE/AI/ScriptWatcher.h"
 #include "GE/ECS/Scene.h"
 #include "GE/ECS/Entity.h"
 #include "GE/Core/Log.h"
@@ -105,6 +106,9 @@ void AISystem_OnSceneStart(Scene* scene) {
 
 void AISystem_OnUpdate(Scene* scene, f32 dt) {
     if (!PythonEngine::IsInitialised()) return;
+
+    // Poll for script file changes (hot-reload)
+    ScriptWatcher::OnUpdate();
 
     // Tick Python AI scripts
     scene->View<AIComponent>([&](auto entity, AIComponent& ai) {

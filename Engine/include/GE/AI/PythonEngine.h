@@ -27,6 +27,9 @@ public:
     // Returns a py::object wrapping the module, or a null object on failure.
     static py::object ImportModule(const std::string& moduleName);
 
+    // Hot-reload: re-import an already-loaded module via importlib.reload
+    static void ReloadModule(const std::string& moduleName);
+
     // Call a free function in an already-imported module
     // args are forwarded as Python positional args
     template<typename... Args>
