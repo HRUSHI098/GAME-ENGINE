@@ -198,6 +198,37 @@ void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& siz
     ++s_Data.Stats.QuadCount;
 }
 
+void Renderer2D::DrawSubTexture(const glm::vec2& position, const glm::vec2& size,
+                                const Ref<SubTexture2D>& subTex, const glm::vec4& tint) {
+    SDL_Renderer* r   = s_Data.RendererAPI->GetSDLRenderer();
+    SDL_Texture*  tex = static_cast<SDL_Texture*>(subTex->GetTexture()->GetNativeHandle());
+    const glm::mat4& vp = s_Data.ActiveCamera->GetViewProjectionMatrix();
+
+    SDL_Point tl = WorldToScreen(position,        s_Data.RenderW, s_Data.RenderH, vp);
+    SDL_Point br = WorldToScreen(position + size, s_Data.RenderW, s_Data.RenderH, vp);
+    SDL_Rect  dst = { tl.x, tl.y, br.x - tl.x, br.y - tl.y };
+
+    // UV [3]=top-left, [2]=top-right, [1]=bottom-right, [0]=bottom-left
+    const glm::vec2* uv = subTex->GetUVCoords();
+    int tw = subTex->GetTexture()->GetWidth();
+    int th = subTex->GetTexture()->GetHeight();
+    SDL_Rect src = {
+        static_cast<int>(uv[3].x * tw),
+        static_cast<int>(uv[3].y * th),
+        static_cast<int>((uv[2].x - uv[3].x) * tw),
+        static_cast<int>((uv[0].y - uv[3].y) * th)
+    };
+
+    SDL_SetTextureColorMod(tex,
+        static_cast<u8>(tint.r * 255), static_cast<u8>(tint.g * 255),
+        static_cast<u8>(tint.b * 255));
+    SDL_SetTextureAlphaMod(tex, static_cast<u8>(tint.a * 255));
+    SDL_RenderCopy(r, tex, &src, &dst);
+
+    ++s_Data.Stats.DrawCalls;
+    ++s_Data.Stats.QuadCount;
+}
+
 void Renderer2D::ResetStats() {
     s_Data.Stats = {};
 }

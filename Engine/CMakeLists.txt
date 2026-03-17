@@ -15,6 +15,7 @@ target_sources(Engine PRIVATE
     # Renderer
     src/Renderer/Camera.cpp
     src/Renderer/Renderer2D.cpp
+    src/Renderer/SubTexture2D.cpp
 
     # ECS
     src/ECS/Scene.cpp
@@ -41,6 +42,9 @@ target_sources(Engine PRIVATE
 
     # Serialization
     src/Scene/SceneSerializer.cpp
+
+    # Asset management
+    src/Assets/AssetManager.cpp
 )
 
 # ── C# Scripting (only compiled when Mono is available) ──────────────────────

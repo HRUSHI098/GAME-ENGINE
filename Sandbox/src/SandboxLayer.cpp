@@ -1,4 +1,5 @@
 #include "SandboxLayer.h"
+#include "GE/Assets/AssetManager.h"
 #include <box2d/box2d.h>
 
 SandboxLayer::SandboxLayer()
@@ -11,9 +12,9 @@ void SandboxLayer::OnAttach() {
     // Paths are relative to the working directory (build/bin/).
     // Drop WAV/OGG files there, or adjust paths as needed.
     // AudioClip::Create gracefully logs an error if the file is missing.
-    m_JumpSound = GE::AudioClip::Create("assets/audio/jump.wav");
-    m_LandSound = GE::AudioClip::Create("assets/audio/land.wav");
-    m_BGMusic   = GE::MusicTrack::Create("assets/audio/bgmusic.ogg");
+    m_JumpSound = GE::AssetManager::GetSound("assets/audio/jump.wav");
+    m_LandSound = GE::AssetManager::GetSound("assets/audio/land.wav");
+    m_BGMusic   = GE::AssetManager::GetMusic("assets/audio/bgmusic.ogg");
 
     // ── Camera ────────────────────────────────────────────────────────────────
     m_CameraEntity = m_Scene->CreateEntity("Main Camera");

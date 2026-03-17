@@ -2,6 +2,7 @@
 
 #include "GE/Core/Base.h"
 #include "GE/Renderer/Texture.h"
+#include "GE/Renderer/SubTexture2D.h"
 #include "GE/Renderer/Camera.h"
 #include <glm/glm.hpp>
 
@@ -31,6 +32,11 @@ public:
     static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size,
                                 f32 rotationRadians, const Ref<Texture2D>& texture,
                                 const glm::vec4& tint = glm::vec4(1.0f));
+
+    // ─── Sprite sheet ─────────────────────────────────────────────────────────
+    static void DrawSubTexture(const glm::vec2& position, const glm::vec2& size,
+                               const Ref<SubTexture2D>& subTex,
+                               const glm::vec4& tint = glm::vec4(1.0f));
 
     // ─── Stats ───────────────────────────────────────────────────────────────
     struct Stats {

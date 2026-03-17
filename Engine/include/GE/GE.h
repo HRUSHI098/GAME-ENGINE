@@ -20,6 +20,7 @@
 #include "GE/Renderer/Renderer2D.h"
 #include "GE/Renderer/Camera.h"
 #include "GE/Renderer/Texture.h"
+#include "GE/Renderer/SubTexture2D.h"
 
 // ECS
 #include "GE/ECS/Scene.h"
@@ -40,6 +41,10 @@
 #include "GE/Scripting/ScriptEngine.h"
 #include "GE/Scripting/ScriptComponent.h"
 #endif
+
+// Assets
+#include "GE/Assets/AssetManager.h"
+#include "GE/Scene/SceneSerializer.h"
 
 // Editor
 #include "GE/Editor/EditorLayer.h"
