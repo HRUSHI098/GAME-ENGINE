@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmake --version)",
+      "Bash(dotnet --version)",
+      "Bash(cmd /c \"cmake --version 2>&1 && python --version 2>&1 && dotnet --version 2>&1\")"
+    ]
+  }
+}
