@@ -38,6 +38,9 @@ target_sources(Engine PRIVATE
     src/Editor/panels/ViewportPanel.cpp
     src/Editor/panels/AssetBrowserPanel.cpp
     src/Editor/panels/ConsolePanel.cpp
+
+    # Serialization
+    src/Scene/SceneSerializer.cpp
 )
 
 # ── C# Scripting (only compiled when Mono is available) ──────────────────────
@@ -71,6 +74,7 @@ target_link_libraries(Engine
         box2d
         pybind11::embed
         imgui
+        nlohmann_json::nlohmann_json
 )
 
 # SDL2_mixer — try both alias styles from FetchContent

@@ -140,8 +140,38 @@ void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size,
 
 void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size,
                                  f32 rotationRadians, const glm::vec4& color) {
-    (void)rotationRadians;
-    DrawQuad(position, size, color);
+    SDL_Renderer* r = s_Data.RendererAPI->GetSDLRenderer();
+    const glm::mat4& vp = s_Data.ActiveCamera->GetViewProjectionMatrix();
+
+    // Build the 4 corners in world space, rotated around center
+    glm::vec2 center = position + size * 0.5f;
+    float     hw     = size.x * 0.5f;
+    float     hh     = size.y * 0.5f;
+    float     cosR   = std::cos(rotationRadians);
+    float     sinR   = std::sin(rotationRadians);
+
+    glm::vec2 corners[4] = {
+        { -hw, -hh }, {  hw, -hh }, {  hw,  hh }, { -hw,  hh }
+    };
+    SDL_Vertex verts[4];
+    SDL_Color  col = {
+        static_cast<u8>(color.r * 255), static_cast<u8>(color.g * 255),
+        static_cast<u8>(color.b * 255), static_cast<u8>(color.a * 255)
+    };
+    for (int i = 0; i < 4; ++i) {
+        glm::vec2 rotated = {
+            corners[i].x * cosR - corners[i].y * sinR + center.x,
+            corners[i].x * sinR + corners[i].y * cosR + center.y
+        };
+        SDL_Point sp = WorldToScreen(rotated, s_Data.RenderW, s_Data.RenderH, vp);
+        verts[i] = { { (float)sp.x, (float)sp.y }, col, { 0.0f, 0.0f } };
+    }
+    // Two triangles: TL,TR,BR and TL,BR,BL
+    int indices[6] = { 0, 1, 2, 0, 2, 3 };
+    SDL_RenderGeometry(r, nullptr, verts, 4, indices, 6);
+
+    ++s_Data.Stats.DrawCalls;
+    ++s_Data.Stats.QuadCount;
 }
 
 void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size,

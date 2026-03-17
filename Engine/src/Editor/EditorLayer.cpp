@@ -2,7 +2,9 @@
 #include "GE/Core/Application.h"
 #include "GE/Core/Log.h"
 #include "GE/Renderer/Renderer2D.h"
+#include "GE/Scene/SceneSerializer.h"
 #include <imgui.h>
+#include <filesystem>
 
 namespace GE {
 
@@ -150,8 +152,19 @@ void EditorLayer::DrawMainMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New Scene",  "Ctrl+N")) {}
-            if (ImGui::MenuItem("Open Scene", "Ctrl+O")) {}
-            if (ImGui::MenuItem("Save Scene", "Ctrl+S")) {}
+            if (ImGui::MenuItem("Open Scene", "Ctrl+O")) {
+                if (m_Scene) {
+                    SceneSerializer s(m_Scene);
+                    s.Deserialize("scenes/scene.json");
+                }
+            }
+            if (ImGui::MenuItem("Save Scene", "Ctrl+S")) {
+                if (m_Scene) {
+                    std::filesystem::create_directories("scenes");
+                    SceneSerializer s(m_Scene);
+                    s.Serialize("scenes/scene.json");
+                }
+            }
             ImGui::Separator();
             if (ImGui::MenuItem("Quit", "Alt+F4"))
                 Application::Get().Close();

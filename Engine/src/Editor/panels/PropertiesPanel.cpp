@@ -121,7 +121,7 @@ void PropertiesPanel::DrawComponents() {
         auto& tag = m_Entity.GetComponent<TagComponent>().Tag;
         char buf[256];
         memset(buf, 0, sizeof(buf));
-        strncpy_s(buf, tag.c_str(), sizeof(buf) - 1);
+        strncpy(buf, tag.c_str(), sizeof(buf) - 1); buf[sizeof(buf)-1] = '\0';
         if (ImGui::InputText("##Tag", buf, sizeof(buf)))
             tag = buf;
     }
@@ -214,7 +214,7 @@ void PropertiesPanel::DrawComponents() {
     // ── C# Script ─────────────────────────────────────────────────────────────
     DrawComponent<ScriptComponent>("Script (C#)", m_Entity, [](ScriptComponent& sc) {
         char buf[128] = {};
-        strncpy_s(buf, sc.ClassName.c_str(), sizeof(buf) - 1);
+        strncpy(buf, sc.ClassName.c_str(), sizeof(buf) - 1); buf[sizeof(buf)-1] = '\0';
         if (ImGui::InputText("Class Name", buf, sizeof(buf)))
             sc.ClassName = buf;
     });
@@ -222,8 +222,8 @@ void PropertiesPanel::DrawComponents() {
     // ── Python AI Script ──────────────────────────────────────────────────────
     DrawComponent<AIComponent>("AI Script (Python)", m_Entity, [](AIComponent& ai) {
         char modBuf[128] = {}, clsBuf[128] = {};
-        strncpy_s(modBuf, ai.ModuleName.c_str(), sizeof(modBuf) - 1);
-        strncpy_s(clsBuf, ai.ClassName.c_str(),  sizeof(clsBuf) - 1);
+        strncpy(modBuf, ai.ModuleName.c_str(), sizeof(modBuf) - 1); modBuf[sizeof(modBuf)-1] = '\0';
+        strncpy(clsBuf, ai.ClassName.c_str(),  sizeof(clsBuf) - 1); clsBuf[sizeof(clsBuf)-1] = '\0';
         if (ImGui::InputText("Module", modBuf, sizeof(modBuf))) ai.ModuleName = modBuf;
         if (ImGui::InputText("Class",  clsBuf, sizeof(clsBuf))) ai.ClassName  = clsBuf;
         ImGui::Text("Instance: %s", ai.PyInstance ? "active" : "none");

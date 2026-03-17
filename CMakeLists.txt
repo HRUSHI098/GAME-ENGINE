@@ -107,7 +107,14 @@ FetchContent_Declare(box2d
     GIT_TAG        v2.4.1
 )
 
-FetchContent_MakeAvailable(spdlog glm EnTT SDL2 SDL2_image SDL2_mixer pybind11 box2d)
+# nlohmann/json — scene serialization
+FetchContent_Declare(nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG        v3.11.3
+)
+set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(spdlog glm EnTT SDL2 SDL2_image SDL2_mixer pybind11 box2d nlohmann_json)
 
 # ─── Subdirectories ──────────────────────────────────────────────────────────
 add_subdirectory(Engine)
